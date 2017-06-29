@@ -1,0 +1,4 @@
+test*.spec
+*.o
+lib*.so
+*.fasl

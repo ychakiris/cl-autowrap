@@ -1,0 +1,15 @@
+#include "include/libavcodec/avcodec.h"
+#include "include/libavformat/avformat.h"
+#include "libswscale/swscale.h"
+
+typedef struct x_test_struct {
+  int something;
+} x_test_struct;
+
+
+id x_save_something(AVFrame *pFrame, int width, int height, int iFrame);
+void x_save_it(int *foo_var);
+int x_something_special;
+x_test_struct *p_foo;
+
+void x_foo_function( x_test_struct *p_something);

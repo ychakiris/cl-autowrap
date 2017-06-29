@@ -1,0 +1,8 @@
+bin
+build
+lib
+include
+share
+curl-7.54.0
+curl-7.54.0.tar.gz
+test*.spec
