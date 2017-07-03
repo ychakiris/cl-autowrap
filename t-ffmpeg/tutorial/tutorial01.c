@@ -19,9 +19,9 @@
 // to write the first five frames from "myvideofile.mpg" to disk in PPM
 // format.
 
-#include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
-#include <libswscale/swscale.h>
+#include "libavcodec/avcodec.h"
+#include "libavformat/avformat.h"
+#include "libswscale/swscale.h"
 #include <stdio.h>
 
 void SaveFrame(AVFrame *pFrame, int width, int height, int iFrame) {
@@ -48,16 +48,17 @@ void SaveFrame(AVFrame *pFrame, int width, int height, int iFrame) {
 
 #pragma mark - Main function
 int main(int argc, char *argv[]) {
-    AVFormatContext *pFormatCtx;
-    int             i, videoStreamIdx;
-    AVCodecContext  *pCodecCtx;
-    AVCodec         *pCodec;
-    AVFrame         *pFrame;
-    AVFrame         *pFrameRGB;
-    AVPacket        packet;
-    int             frameFinished;
-    int             numBytes;
-    uint8_t         *buffer;
+    AVFormatContext    *pFormatCtx;
+    int                i, videoStreamIdx;
+    AVCodecContext     *pCodecCtx;
+    AVCodecParameters  *pCodecPar;
+    AVCodec            *pCodec;
+    AVFrame            *pFrame;
+    AVFrame            *pFrameRGB;
+    AVPacket           packet;
+    int                frameFinished;
+    int                numBytes;
+    uint8_t            *buffer;
     static struct SwsContext *img_convert_ctx;
 
     if(argc < 2) {
@@ -89,7 +90,7 @@ int main(int argc, char *argv[]) {
     /// Find the first video stream
     videoStreamIdx=-1;
     for(i=0; i<pFormatCtx->nb_streams; i++)
-        if(pFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) { //CODEC_TYPE_VIDEO
+        if(pFormatCtx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) { //CODEC_TYPE_VIDEO
             videoStreamIdx=i;
             break;
         }
@@ -98,15 +99,28 @@ int main(int argc, char *argv[]) {
 
 
     /// Get a pointer to the codec context for the video stream
-    pCodecCtx = pFormatCtx->streams[videoStreamIdx]->codec;
-
+    // pCodecCtx = pFormatCtx->streams[videoStreamIdx]->codec; //deprecated
+    pCodecPar = pFormatCtx->streams[videoStreamIdx]->codecpar;
 
     /// Find the decoder for the video stream
-    pCodec = avcodec_find_decoder( pCodecCtx->codec_id);
+    //  pCodec = avcodec_find_decoder( pCodecCtx->codec_id); // deprecated
+    pCodec = avcodec_find_decoder(pCodecPar->codec_id);
     if(pCodec==NULL) {
         fprintf(stderr, "Unsupported codec!\n");
         return -1; // Codec not found
     }
+
+    pCodecCtx = avcodec_alloc_context3(pCodec);
+    if (!pCodecCtx) {
+      fprintf(stderr, "Unable to allocate a AVCodecContext");
+      return -1; 
+    }
+
+    if (avcodec_parameters_to_context(pCodecCtx, pCodecPar) < 0) {
+      fprintf(stderr, "Unable to copy parameters from AVCodecParameters to AVCodecContext");
+      return -1;
+    }
+
     /// Open codec
     //if( avcodec_open(pCodecCtx, pCodec) < 0 ) -- Deprecated
     if( avcodec_open2(pCodecCtx, pCodec, NULL) < 0 )

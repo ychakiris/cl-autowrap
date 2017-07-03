@@ -6,7 +6,21 @@
 #+(or)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (cffi-sys:%load-foreign-library
+   :libswresample (merge-pathnames "lib/libavutil.so" (asdf-path 'cl-autowrap-test-ffmpeg))))
+
+
+
+#+(or)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (cffi-sys:%load-foreign-library
    :libswresample (merge-pathnames "lib/libswresample.so" (asdf-path 'cl-autowrap-test-ffmpeg))))
+
+#+(or)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (cffi-sys:%load-foreign-library
+   :libswresample (merge-pathnames "lib/libavcodec.so" (asdf-path 'cl-autowrap-test-ffmpeg))))
+
+
 
 #+(or)
  (eval-when (:compile-toplevel :load-toplevel :execute)
