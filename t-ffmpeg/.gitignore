@@ -4,6 +4,5 @@ lib
 share
 cscope.*
 ffmpeg-3.3.1
-ffmpeg-3.3.1.tar.bz2
 test*.spec
 *.fasl

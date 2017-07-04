@@ -22,6 +22,7 @@
 #include "libavcodec/avcodec.h"
 #include "libavformat/avformat.h"
 #include "libswscale/swscale.h"
+#include "libavutil/imgutils.h"
 #include <stdio.h>
 
 void SaveFrame(AVFrame *pFrame, int width, int height, int iFrame) {
@@ -136,10 +137,17 @@ int main(int argc, char *argv[]) {
         return -1;
 
 
-    /// Determine required buffer size and allocate buffer
-    numBytes = avpicture_get_size(AV_PIX_FMT_RGB24,
-                                  pCodecCtx->width,
-                                  pCodecCtx->height);
+    /// Determine required buffer size and allocate buffer  // deprecated
+    // numBytes = avpicture_get_size(AV_PIX_FMT_RGB24,
+    //                              pCodecCtx->width,
+    //                              pCodecCtx->height);
+
+    // Determine required buffer size and allocate buffer
+    // the deprecated function simply calls this one with a 1
+
+    numBytes = av_image_get_buffer_size(AV_PIX_FMT_RGB24,
+                                        pCodecCtx->width,
+                                        pCodecCtx->height, 1);
 
     buffer = (uint8_t *) av_malloc(numBytes*sizeof(uint8_t));
 
