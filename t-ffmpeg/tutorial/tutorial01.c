@@ -25,6 +25,7 @@
 #include "libavutil/imgutils.h"
 #include <stdio.h>
 
+
 void SaveFrame(AVFrame *pFrame, int width, int height, int iFrame) {
     FILE *pFile;
     char szFilename[32];
@@ -47,6 +48,60 @@ void SaveFrame(AVFrame *pFrame, int width, int height, int iFrame) {
     fclose(pFile);
 }
 
+
+
+void hexDump (char *desc, void *addr, int len) {
+    int i;
+    unsigned char buff[17];
+    unsigned char *pc = (unsigned char*)addr;
+
+    // Output description if given.
+    if (desc != NULL)
+        printf ("%s:\n", desc);
+
+    if (len == 0) {
+        printf("  ZERO LENGTH\n");
+        return;
+    }
+    if (len < 0) {
+        printf("  NEGATIVE LENGTH: %i\n",len);
+        return;
+    }
+
+    // Process every byte in the data.
+    for (i = 0; i < len; i++) {
+        // Multiple of 16 means new line (with line offset).
+
+        if ((i % 16) == 0) {
+            // Just don't print ASCII for the zeroth line.
+            if (i != 0)
+                printf ("  %s\n", buff);
+
+            // Output the offset.
+            printf ("  %04x ", i);
+        }
+
+        // Now the hex code for the specific character.
+        printf (" %02x", pc[i]);
+
+        // And store a printable ASCII character for later.
+        if ((pc[i] < 0x20) || (pc[i] > 0x7e))
+            buff[i % 16] = '.';
+        else
+            buff[i % 16] = pc[i];
+        buff[(i % 16) + 1] = '\0';
+    }
+
+    // Pad out last line if not exactly 16 characters.
+    while ((i % 16) != 0) {
+        printf ("   ");
+        i++;
+    }
+
+    // And print the final ASCII bit.
+    printf ("  %s\n", buff);
+}
+
 #pragma mark - Main function
 int main(int argc, char *argv[]) {
     AVFormatContext    *pFormatCtx;
@@ -57,6 +112,7 @@ int main(int argc, char *argv[]) {
     AVFrame            *pFrame;
     AVFrame            *pFrameRGB;
     AVPacket           packet;
+    int                av_read_frame_count;
     int                frameFinished;
     int                numBytes;
     uint8_t            *buffer;
@@ -103,6 +159,9 @@ int main(int argc, char *argv[]) {
     // pCodecCtx = pFormatCtx->streams[videoStreamIdx]->codec; //deprecated
     pCodecPar = pFormatCtx->streams[videoStreamIdx]->codecpar;
 
+    fprintf(stderr, "\nextradata_size = %i\n", pCodecPar->extradata_size);
+    hexDump("pCodecPar->extradata", pCodecPar->extradata, pCodecPar->extradata_size);
+
     /// Find the decoder for the video stream
     //  pCodec = avcodec_find_decoder( pCodecCtx->codec_id); // deprecated
     pCodec = avcodec_find_decoder(pCodecPar->codec_id);
@@ -143,7 +202,8 @@ int main(int argc, char *argv[]) {
     //                              pCodecCtx->height);
 
     // Determine required buffer size and allocate buffer
-    // the deprecated function simply calls this one with a 1
+    // the deprecated function simply calls this one with a 1 in the extra
+    // parameter
 
     numBytes = av_image_get_buffer_size(AV_PIX_FMT_RGB24,
                                         pCodecCtx->width,
@@ -165,14 +225,18 @@ int main(int argc, char *argv[]) {
                                      w, h, AV_PIX_FMT_RGB24,
                                      SWS_BICUBIC, NULL, NULL, NULL);
     // Read frames and save first five frames to disk
-    i=0;
+
+    i=0, av_read_frame_count=0;
     while((av_read_frame(pFormatCtx, &packet)>=0) && (i<5)) {
         // Is this a packet from the video stream?
-        if(packet.stream_index==videoStreamIdx) {
+
+      if(packet.stream_index==videoStreamIdx) {
 
             /// Decode video frame
             //avcodec_decode_video(pCodecCtx, pFrame, &frameFinished,packet.data, packet.size);
             avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
+
+            printf( "\nPacket no %i, frameFinished = %i: size =  %i", i, frameFinished, packet.size);
 
             // Did we get a video frame?
             if(frameFinished) {
@@ -183,7 +247,7 @@ int main(int argc, char *argv[]) {
                 SaveFrame(pFrameRGB, pCodecCtx->width, pCodecCtx->height, i);
             }
         }
-
+      
         // Free the packet that was allocated by av_read_frame
         av_free_packet(&packet);
     }
@@ -201,7 +265,7 @@ int main(int argc, char *argv[]) {
 
     // Close the video file
     avformat_close_input(&pFormatCtx);
-
+    printf("\n");
 //*/
     return 0;
 }

@@ -8,7 +8,7 @@ FFMPEG_LIBS=    libavdevice                        \
                 libavutil                          \
 
 PKG_CONFIG_DIR= ../lib/pkgconfig 
-CFLAGS += -Wall -O2 -g -ggdb
+CFLAGS += -Wall -O2 -g -ggdb -fPIC
 CFLAGS := $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_DIR); pkg-config --cflags $(FFMPEG_LIBS)) $(CFLAGS)
 CFLAGS := $(shell freetype-config --cflags) $(CFLAGS)
 CFLAGS := $(shell sdl-config --cflags) $(CFLAGS)
@@ -41,6 +41,12 @@ clean-test:
 clean: clean-test
 	$(RM) $(EXAMPLES) $(OBJS)
 
-run-tutorial01:
+run-test01:
 	export LD_LIBRARY_PATH=../lib:$(LD_LIBRARY_PATH)
 	./tutorial01 test_data/centaur_1.mpg
+
+run-test02:
+	export LD_LIBRARY_PATH=../lib:$(LD_LIBRARY_PATH)
+	./tutorial01 test_data/1.avi
+
+
