@@ -1,4 +1,6 @@
-(defpackage :autowrap
+(in-package :defpackage+-user-1)
+
+(defpackage+ :autowrap
   (:use #:cl #:alexandria)
   (:export
    ;; Conditions
@@ -36,7 +38,8 @@
    #:default-c-to-lisp
 
    ;; SFFI
-   #:foreign-type #:foreign-type-name #:basic-foreign-type
+   #:foreign-type #:foreign-type-name #:foreign-qualified-name
+   #:basic-foreign-type
 
    #:foreign-record #:foreign-record-bit-size #:foreign-record-bit-alignment
    #:foreign-record-fields #:find-record-field
@@ -120,3 +123,6 @@
            #:inhibit-string-conversion #:autocollect #:wrapper-null-p #:sizeof
            #:autocollect-cancel #:with-autocollect-cancel
            #:making-autocollect-instance))
+
+(defpackage+ :autowrap.libffi
+  (:use))

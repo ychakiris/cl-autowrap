@@ -15,6 +15,9 @@
   :components
   ((:static-file "include/libavcodec/avcodec.h")
    (:static-file "include/libavformat/avformat.h")
+   (:static-file "include/libswscale/swscale.h")
+   (:static-file "include/imgutils.h")
+   (:static-file "tut01.h")
    (:static-file "test.h")))
 
   ;; :components
