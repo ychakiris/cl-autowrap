@@ -25,6 +25,9 @@ EXAMPLES=        tutorial01                         \
 #                tutorial06                         \
 #                tutorial07
 
+EXAMPLES_LIB=       lib_tutorial01
+
+LIBRARIES=$(addsuffix .so,$(EXAMPLES_LIB))
 OBJS=$(addsuffix .o,$(EXAMPLES))
 
 # the following examples make explicit use of the math library
@@ -35,18 +38,23 @@ muxing:            LDLIBS += -lm
 
 all: $(OBJS) $(EXAMPLES)
 
+lib: $(LIBRARIES)
+
 clean-test:
 	$(RM) frame*.ppm frame*.pgm test.h264 test.mp2 test.sw test.mpg
 
 clean: clean-test
 	$(RM) $(EXAMPLES) $(OBJS)
+	$(RM) lib*
 
 run-test01:
-	export LD_LIBRARY_PATH=../lib:$(LD_LIBRARY_PATH)
-	./tutorial01 test_data/centaur_1.mpg
+	export LD_LIBRARY_PATH=../lib:$(LD_LIBRARY_PATH); \
+./tutorial01 test_data/centaur_1.mpg
 
 run-test02:
-	export LD_LIBRARY_PATH=../lib:$(LD_LIBRARY_PATH)
-	./tutorial01 test_data/1.avi
+	export LD_LIBRARY_PATH=../lib:$(LD_LIBRARY_PATH); \
+./tutorial01 test_data/1.avi
 
+lib_tutorial01.so : tutorial01.o
+	gcc tutorial01.o -o lib_tutorial01.so -shared
 

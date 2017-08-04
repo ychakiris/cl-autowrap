@@ -48,6 +48,12 @@ void SaveFrame(AVFrame *pFrame, int width, int height, int iFrame) {
     fclose(pFile);
 }
 
+int fake_avformat_open_input(AVFormatContext *pc, const char *filename) {
+  if(avformat_open_input(&pc, filename, NULL, NULL) != 0)
+    return -1; // could not open file
+  return 0;
+}
+
 
 
 void hexDump (char *desc, void *addr, int len) {
@@ -131,8 +137,10 @@ int main(int argc, char *argv[]) {
 
     /// Open video file
     //if(av_open_input_file(&pFormatCtx, argv[1], NULL, 0, NULL)!=0) // Deprecated
-    if(avformat_open_input(&pFormatCtx, argv[1], NULL, NULL) != 0)
-        return -1; // Couldn't open file
+    // if(avformat_open_input(&pFormatCtx, argv[1], NULL, NULL) != 0)
+    //    return -1; // Couldn't open file
+    if(fake_avformat_open_input(pFormatCtx, argv[1]) != 0)
+      return -1;
 
     /// Retrieve stream information
     //if(av_find_stream_info(pFormatCtx)<0) // Deprecated

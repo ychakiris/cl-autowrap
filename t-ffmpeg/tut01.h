@@ -6,6 +6,11 @@
 #include "libavutil/frame.h"
 
 
-void SaveFrame(AVFrame *pFrame, int width, int height, int iFrame);
+void SaveFrame(AVFrame *pFrame,
+               int width,
+               int height, int iFrame);
+int fake_avformat_open_input(AVFormatContext *pc,
+                             char *filename);
 void hexDump (char *desc, void *addr, int len);
+
 int main(int argc, char *argv[]);

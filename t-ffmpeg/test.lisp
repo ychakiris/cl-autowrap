@@ -33,11 +33,15 @@
   (cffi-sys:%load-foreign-library
    :libswscale (merge-pathnames "lib/libswscale.so" (asdf-path 'cl-autowrap-test-ffmpeg))))
 
+#+(or)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (cffi-sys:%load-foreign-library
+   :libswresample (merge-pathnames "lib/libswresample.so" (asdf-path 'cl-autowrap-test-ffmpeg))))
 
 #+(or)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (cffi-sys:%load-foreign-library
-   :libtut01 (merge-pathnames "tutorial/libtut01.so.1.0.1" (asdf-path 'cl-autowrap-test-ffmpeg))))
+   :libtut01 (merge-pathnames "tutorial/lib_tutorial01.so" (asdf-path 'cl-autowrap-test-ffmpeg))))
 
 
 #+(or)
@@ -48,22 +52,20 @@
            :sysincludes '("/usr/include/x86_64-linux-gnu"
                           "/home/yitzchok/quicklisp/local-projects/cl-autowrap/t-ffmpeg/include" )
            :spec-path '(cl-autowrap-test-ffmpeg)
-           :no-accessors cl:t)
+           :no-accessors cl:t :release-p cl:t)
 
 (av-register-all)
 (setq pFormatCtx  (avformat-alloc-context))
 (type-of pformatctx)
 
+(setq pointer-to-pformatctx (autowrap:ptr pformatctx))
 
-(autowrap:alloc-ptr (type-of (autowrap:alloc-ptr (type-of pformatctx)))
+(setq new-pointer (autowrap:alloc-ptr :pointer))
 
-(setq pointer-to-pformatctx (autowrap:alloc-ptr (type-of pformatctx)))
-
-(autowrap:c-aptr pformatctx 0)
-
+(setf (autowrap:c-aref
+       new-pointer 1) pointer-to-pformatctx )
 ;; (avformat-open-input )
 
-(autowrap:sizeof pformatctx)
 
 
 
