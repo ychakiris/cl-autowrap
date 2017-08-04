@@ -64,7 +64,8 @@
 
 (setf (autowrap:c-aref
        new-pointer 1) pointer-to-pformatctx )
-;; (avformat-open-input )
+(fake-avformat-open-input pformatctx "/home/yitzchok/quicklisp/local-projects/cl-autowrap/t-ffmpeg/tutorial/test_data/1.avi")
+
 
 
 
