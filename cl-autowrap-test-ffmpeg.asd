@@ -11,7 +11,7 @@
 
   :depends-on (:cl-autowrap)
   :pathname "t-ffmpeg"
-  :serial t-ffmpeg
+  :serial t
   :components
   ((:static-file "include/libavcodec/avcodec.h")
    (:static-file "include/libavformat/avformat.h")

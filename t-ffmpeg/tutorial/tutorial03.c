@@ -17,9 +17,11 @@
 // to play the stream on your screen.
 
 
-#include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
-#include <libswscale/swscale.h>
+#include "libavcodec/avcodec.h"
+#include "libavformat/avformat.h"
+#include "libswscale/swscale.h"
+
+#define MAX_AUDIO_FRAME_SIZE 192000 // 1 second of 48khz 32-bit audio
 
 #include <SDL/SDL.h>
 #include <SDL/SDL_thread.h>
@@ -137,14 +139,22 @@ int audio_decode_frame(AVCodecContext *aCodecCtx, uint8_t *audio_buf, int buf_si
         {
             int got_frame = 0;
 
-            if (!decoded_aframe) {
-                if (!(decoded_aframe = avcodec_alloc_frame())) {
-                    fprintf(stderr, "out of memory\n");
-                    exit(1);
-                }
-            } else
-                avcodec_get_frame_defaults(decoded_aframe);
+            // deprecated
+            //   if (!decoded_aframe) {
+            //   if (!(decoded_aframe = avcodec_alloc_frame())) {
+            //        fprintf(stderr, "out of memory\n");
+            //        exit(1);
+            //    }
 
+            if (!decoded_aframe) {
+              if (!(decoded_aframe = av_frame_alloc())) {
+                fprintf(stderr, "out of memory\n");
+                exit(1);
+              }
+            } else
+              //   avcodec_get_frame_defaults(decoded_aframe); deprecated
+
+              av_frame_unref(decoded_aframe);
             //data_size = buf_size; /// ????
             len1 = avcodec_decode_audio4(aCodecCtx, decoded_aframe, &got_frame, &pktTemp);
 
@@ -157,7 +167,7 @@ int audio_decode_frame(AVCodecContext *aCodecCtx, uint8_t *audio_buf, int buf_si
 
 
             if (got_frame) {
-                printf("\nGot frame!");
+                printf("\nGot frame!\n");
                 //printf("\nFrame data size: %d", sizeof(decoded_aframe->data[0]));
                 data_size = av_samples_get_buffer_size(NULL, aCodecCtx->channels,
                                                        decoded_aframe->nb_samples,
@@ -171,7 +181,7 @@ int audio_decode_frame(AVCodecContext *aCodecCtx, uint8_t *audio_buf, int buf_si
                 data_size = 0;
             }
 
-            printf("\nData size %d", data_size);
+            printf("Data size %d\n", data_size);
             pktTemp.data += len1;
             pktTemp.size -= len1;
 
@@ -292,6 +302,11 @@ int main(int argc, char *argv[]) {
     }
     // Register all formats and codecs
     av_register_all();
+    
+    pFormatCtx = avformat_alloc_context();
+    if (!pFormatCtx) {
+      return -1;
+    }
 
     if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER)) {
         fprintf(stderr, "Could not initialize SDL - %s\n", SDL_GetError());
@@ -372,8 +387,8 @@ int main(int argc, char *argv[]) {
         return -1; // Could not open codec
 
     // Allocate video frame
-    pFrame=avcodec_alloc_frame();
-
+    // pFrame=avcodec_alloc_frame();
+    pFrame = av_frame_alloc();
     // Make a screen to put our video
 
 #ifndef __DARWIN__

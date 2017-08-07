@@ -108,8 +108,15 @@ void hexDump (char *desc, void *addr, int len) {
     printf ("  %s\n", buff);
 }
 
+
+#if __AS_SHARED_LIB
+#define __MAIN_FUNCTION tutorial01_main
+#else
+#define __MAIN_FUNCTION main
+#endif
+
 #pragma mark - Main function
-int main(int argc, char *argv[]) {
+int __MAIN_FUNCTION(int argc, char *argv[]) {
     AVFormatContext    *pFormatCtx;
     int                i, videoStreamIdx;
     AVCodecContext     *pCodecCtx;

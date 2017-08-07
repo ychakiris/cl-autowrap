@@ -16,9 +16,9 @@
 // to play the video stream on your screen.
 
 
-#include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
-#include <libswscale/swscale.h>
+#include "libavcodec/avcodec.h"
+#include "libavformat/avformat.h"
+#include "libswscale/swscale.h"
 
 #include <SDL/SDL.h>
 #include <SDL/SDL_thread.h>
@@ -29,7 +29,14 @@
 
 #include <stdio.h>
 
-int main(int argc, char *argv[]) {
+#if __AS_SHARED_LIB
+#define __MAIN_FUNCTION tutorial02_main
+#else
+#define __MAIN_FUNCTION main
+#endif
+
+
+int __MAIN_FUNCTION(int argc, char *argv[]) {
     AVFormatContext *pFormatCtx;
     int             i, videoStream;
     AVCodecContext  *pCodecCtx;
@@ -51,7 +58,10 @@ int main(int argc, char *argv[]) {
     }
     // Register all formats and codecs
     av_register_all();
-
+    pFormatCtx = avformat_alloc_context();
+    if (!pFormatCtx) {
+      return -1;
+    }
 
     /// Init SDL
     if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER)) {
@@ -95,7 +105,8 @@ int main(int argc, char *argv[]) {
         return -1; // Could not open codec
 
     // Allocate video frame
-    pFrame=avcodec_alloc_frame();
+    // pFrame=avcodec_alloc_frame(); deprecated
+    pFrame = av_frame_alloc();
 
     /// Make a screen to put our video
 #ifndef __DARWIN__
@@ -131,7 +142,7 @@ int main(int argc, char *argv[]) {
             // Did we get a video frame?
             if(frameFinished) {
                 SDL_LockYUVOverlay(bmp);
-
+                i++;
                 AVPicture pict;
                 pict.data[0] = bmp->pixels[0];
                 pict.data[1] = bmp->pixels[2];
@@ -148,10 +159,10 @@ int main(int argc, char *argv[]) {
 
                 SDL_UnlockYUVOverlay(bmp);
 
-                rect.x = 0;
-                rect.y = 0;
-                rect.w = pCodecCtx->width;
-                rect.h = pCodecCtx->height;
+                rect.x = 10;
+                rect.y = 10;
+                rect.w = pCodecCtx->width/2;
+                rect.h = pCodecCtx->height/2;
                 SDL_DisplayYUVOverlay(bmp, &rect);
 
             }
@@ -160,6 +171,7 @@ int main(int argc, char *argv[]) {
         // Free the packet that was allocated by av_read_frame
         av_free_packet(&packet);
         SDL_PollEvent(&event);
+        SDL_Delay(10);
         switch(event.type) {
             case SDL_QUIT:
                 SDL_Quit();
@@ -180,6 +192,7 @@ int main(int argc, char *argv[]) {
     // Close the video file
     avformat_close_input(&pFormatCtx);
 
-    printf("Finished tutorial 02");
+    printf("Finished tutorial 02\n");
+    printf("Number of Frames: %i\n", i);
     return 0;
 }
